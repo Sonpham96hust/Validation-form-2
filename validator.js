@@ -1,6 +1,17 @@
 function Validator(formSelector){
     var formRules = {};
 
+    function getParent(element, selector){
+        while(element.parentElement){
+            if (element.parentElement.matches(selector)){
+                return element.parentElement
+            }else{
+                element = element.parentElement
+            }
+        }
+    }
+
+
     /**
      * Quy ước tạo rule:
      * - Nếu có lỗi thì return `error message`
@@ -51,6 +62,7 @@ function Validator(formSelector){
             
         // Lắng nghe events để validate (blur, onchange,...)
             input.onblur = handleValidate;
+            input.oninput = hanleClearError;
 
         // Hàm thực hiện validate
         function handleValidate(event){
@@ -61,9 +73,34 @@ function Validator(formSelector){
                 errorMessage = rule(event.target.value);
     }
             });
-            console.log(errorMessage)
+            // Nếu có lỗi thì hiển thị lỗi qua UI
+            if (errorMessage){
+              var formGroup =  getParent(event.target, '.form-group')
+              if (formGroup){
+                formGroup.classList.add('invalid')
+                var formMessage = formGroup.querySelector('.form-message')
+                if(formMessage){
+                    formMessage.innerText = errorMessage;
+                }
+              }
+            }
         }
-
+        //Hàm clear message lỗi
+        function hanleClearError(event){
+            var formGroup =  getParent(event.target, '.form-group')
+            if (formGroup.classList.contains('invalid')){
+                formGroup.classList.remove('invalid')
+            }
+            var formMessage = formGroup.querySelector('.form-message')
+                if(formMessage){
+                    formMessage.innerText = '';
+                }
+        }
+        //Xử lý hành vi submit form
+        formElement.onsubmit = function(e)
+        {
+            e.preventDefault();
+        }
         })
        // console.log(formRules)
     }
