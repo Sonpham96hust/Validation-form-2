@@ -1,4 +1,7 @@
 function Validator(formSelector){
+    // Gán giá trị mặc định cho tham số ES5
+    var _this =this;
+
     var formRules = {};
 
     function getParent(element, selector){
@@ -84,6 +87,7 @@ function Validator(formSelector){
                 }
               }
             }
+            return !errorMessage;
         }
         //Hàm clear message lỗi
         function hanleClearError(event){
@@ -92,7 +96,7 @@ function Validator(formSelector){
                 formGroup.classList.remove('invalid')
             }
             var formMessage = formGroup.querySelector('.form-message')
-                if(formMessage){
+            if(formMessage){
                     formMessage.innerText = '';
                 }
         }
@@ -100,8 +104,48 @@ function Validator(formSelector){
         formElement.onsubmit = function(e)
         {
             e.preventDefault();
-        }
+            var inputs = formElement.querySelectorAll('[name][rules]');
+            var isValid = true;
+            inputs.forEach(function (input){
+                if (!handleValidate({target: input})){
+                    isValid = false;
+                }
         })
-       // console.log(formRules)
+        if (isValid){
+            if(typeof _this.onSubmit === 'function'){
+            var enableInputs = formElement.querySelectorAll('[name]')
+            var formValue = Array.from(enableInputs).reduce(function (result, input){
+                    switch(input.type){
+                        case 'radio':
+                        result[input.name] = formElement.querySelector('input[name="' + input.name + '"]:checked').value;
+                        break;
+                        case 'checkbox':
+                            if(!input.matches(':checked')) {
+                                value[input.name] = '';
+                                return result
+                            }
+                            if(!Array.isArray(result[input.name])){
+                                result[input.name]=[];
+                            }
+                            result[input.name].push(input.value)
+                        break;
+                        default:
+                        result[input.name] = input.value ;
+                    }
+                    
+                    
+                    return result;
+                }, {});
+                _this.onSubmit(formValue);
+                
+            }
+            else{
+                formElement.submit();
+            }
+        }
+
+        }
+    })
+       
     }
 }
